@@ -93,6 +93,7 @@ int main(void) {
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
     uint8_t data_buffer[6];
+    uint8_t rx_buff[256] = {0};
     float temp_f, press_f = 0.0f;
     int32_t Tadc, Braw = 0;
     /* USER CODE END 2 */
@@ -100,6 +101,7 @@ int main(void) {
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     MSPC15M_Init(MSPC15M_IIC_ADDR, &MSPC15M_OTP_Structure);
+//    MSPC15M_Init_SPI(&MSPC15M_OTP_Structure);
     HAL_Delay(50);
     while (1) {
         /* USER CODE END WHILE */
@@ -109,6 +111,9 @@ int main(void) {
         // temperature
         data_buffer[0] = MSPC15M_ReadData(MSPC15M_IIC_ADDR, 0x58);
         data_buffer[1] = MSPC15M_ReadData(MSPC15M_IIC_ADDR, 0x59);
+//        MSPC15M_ReadBuffer_SPI(0x58, rx_buff, 4);
+//        data_buffer[0] = rx_buff[2];
+//        data_buffer[1] = rx_buff[3];
         Tadc = (data_buffer[0] & 0x7f) << 8 | data_buffer[1];
         HAL_Delay(10);
 
@@ -116,11 +121,14 @@ int main(void) {
         data_buffer[2] = MSPC15M_ReadData(MSPC15M_IIC_ADDR, 0x55);
         data_buffer[3] = MSPC15M_ReadData(MSPC15M_IIC_ADDR, 0x56);
         data_buffer[4] = MSPC15M_ReadData(MSPC15M_IIC_ADDR, 0x57);
-
+//        MSPC15M_ReadBuffer_SPI(0x55, rx_buff, 5);
+//        data_buffer[2] = rx_buff[2];
+//        data_buffer[3] = rx_buff[3];
+//        data_buffer[4] = rx_buff[4];
         Braw = data_buffer[2] << 16 | data_buffer[3] << 8 | data_buffer[4];
 
         MSPC15M_Calc(Braw, Tadc, &press_f, &temp_f, &MSPC15M_OTP_Structure);
-        printf("MSPC15M : P = %.3fPa, T = %.3fC\r\n", press_f, temp_f);
+        printf("MSPC15M: P = %.3fPa, T = %.3fC\r\n", press_f, temp_f);
     }
     /* USER CODE END 3 */
 }
